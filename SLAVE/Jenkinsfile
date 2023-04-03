@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+    environment {
+        DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+    }
+    stages {
+        stage('Trigged') {
+            steps {
+                echo "Hello $DOCKERHUB_CREDENTIALS_USR from Slave"
+            }
+        }
+      stage('Initialize Stage') {
+            steps {
+                echo 'Initial : Delete  containers and images'
+                    echo "Current path is ${pwd()}"
+                    sh "docker-compose down --rmi all --volumes --remove-orphans"
+                    sh "docker network prune"
+                    sh "docker volume prune"
+                }
+            }
+        }
+        stage('Login Stage') {
+          steps {
+            echo "Login : Logging in . . ."
+            sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+          }
+        }
+        stage('Pull Stage') {
+            steps {
+                dir('Lab_jenkins_dockercompose') { // change directory to Lab_docker_Jenkins
+                    echo "Pull : pulling image from dockerhub . . ."
+                    sh "docker-compose pull"
+                }
+            }
+        }
+        stage('Install Stage') {
+            steps {
+                dir('Lab_jenkins_dockercompose') { // change directory to Lab_docker_Jenkins
+                    echo "Install : Installing image to EC2 . . ."
+                    sh "docker-compose up -d"
+                }
+            }
+        }
+    }
+}
