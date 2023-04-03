@@ -3,37 +3,48 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS=credentials('dockerhub')
     }
-    stages {
-        stage('Trigged') {
+     stages {
+        stage('Trigger Stage') {
             steps {
-                echo "Hello $DOCKERHUB_CREDENTIALS_USR from Slave"
+                echo "Hello dockerhub."
+                echo "Username: ${params.DOCKERHUB_CREDENTIALS_USR}"
             }
         }
+        
         stage('Initialize Stage') {
             steps {
+            
                 echo 'Initial : Delete  containers and images'
+                 dir('Lab_jenkins_dockercompose') { // change directory to Lab_docker_Jenkins
                     echo "Current path is ${pwd()}"
                     sh "docker-compose down --rmi all --volumes --remove-orphans"
                     sh "docker network prune"
                     sh "docker volume prune"
-          }
-        }
-        stage('Login Stage') {
-          steps {
-            echo "Login : Logging in . . ."
-            sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-          }
-        }
-        stage('Pull Stage') {
-            steps {
-                    echo "Pull : pulling image from dockerhub . . ."
-                    sh "docker-compose pull"
+                }
             }
         }
-        stage('Install Stage') {
+        
+        stage('Login Stage') {
             steps {
-                    echo "Install : Installing image to EC2 . . ."
+                echo "Login : Logging in . . ."
+                sh "echo ${params.DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${params.DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+            }
+        }
+
+        stage('Pull Stage') {
+            steps {
+                dir('Lab_jenkins_dockercompose') { // change directory to Lab_docker_Jenkins
+                    sh "docker-compose pull"
+                    sh "ls"
+                }
+            }
+        }
+        
+        stage('Run Stage') {
+            steps {
+                dir('Lab_jenkins_dockercompose') { // change directory to Lab_docker_Jenkins
                     sh "docker-compose up -d"
+                }
             }
         }
     }
