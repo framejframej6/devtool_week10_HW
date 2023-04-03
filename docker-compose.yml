@@ -1,0 +1,37 @@
+# version is now using "compose spec"
+# v2 and v3 are now combined!
+# docker-compose v1.27+ required
+
+services:
+  frontend:
+    build: ./frontend
+    image: framejframej6/frontend:1.0
+    # use python rather than gunicorn for local dev
+    healthcheck: 
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    volumes:
+     - ./frontend:/app
+    ports:
+      - "8081:80"
+    networks:
+      - front-tier
+      - back-tier
+
+  backend:
+    build: ./backend
+    image: framejframej6/backend:1.0
+    # use nodemon rather than node for local dev
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8088:80"
+    networks:
+      - front-tier
+      - back-tier
+networks:
+  front-tier:
+  back-tier:
