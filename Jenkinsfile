@@ -6,7 +6,7 @@ pipeline {
     }
 
     stages {
-        stage('Initialize Stage ') {
+        stage('Initialize Stage 123') {
             steps {
                 echo 'Initial : Delete  containers and images'
                 echo "Current path is ${pwd()}"
